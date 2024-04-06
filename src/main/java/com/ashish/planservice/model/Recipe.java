@@ -1,13 +1,13 @@
 package com.ashish.planservice.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Builder
 @NoArgsConstructor
@@ -16,15 +16,15 @@ import lombok.NoArgsConstructor;
 @Entity
 public class Recipe {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+    private String description;
     private String category;
-    private Double quantity;
-    private Double protein;
-    private Double fat;
-    private Double carbs;
-    private Double fiber;
     private String imageUrl;
+
+    @JsonManagedReference
+    @OneToMany(mappedBy = "recipe")
+    private List<RecipeVariant> variants;
 
 }

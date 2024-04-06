@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface WorkoutService {
-    ResponseWorkout addWorkout(RequestWorkout requestWorkout, MultipartFile file);
+    ResponseWorkout addWorkout(RequestWorkout requestWorkout, MultipartFile video);
 
 
     List<Workout> getAllWorkouts();

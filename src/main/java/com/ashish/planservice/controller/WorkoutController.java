@@ -16,12 +16,12 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/workout")
+@RequestMapping("/api/v1/plans")
 public class WorkoutController {
     @Autowired
     WorkoutService workoutService;
 
-    @PostMapping("/addWorkout")
+        @PostMapping("/addWorkout")
     public ResponseEntity<ResponseWorkout> addWorkout(
             @RequestPart("file") MultipartFile file,
             @RequestParam("workoutRequest") String workoutRequest

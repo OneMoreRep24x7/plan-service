@@ -20,7 +20,7 @@ public class WorkoutServiceImp implements WorkoutService{
     @Autowired
     CloudinaryService cloudinaryService;
     @Override
-    public ResponseWorkout addWorkout(RequestWorkout requestWorkout, MultipartFile img) {
+    public ResponseWorkout addWorkout(RequestWorkout requestWorkout, MultipartFile video) {
         String name = requestWorkout.getName();
         Optional<Workout> optionalWorkout = repository.findByName(name);
         if(optionalWorkout.isPresent()){
@@ -30,7 +30,7 @@ public class WorkoutServiceImp implements WorkoutService{
                     .build();
         }
         String folder = "Workout_Videos";
-        Map data =  cloudinaryService.upload(img,folder);
+        Map data =  cloudinaryService.uploadVideo(video,folder);
         String videoUrl = (String) data.get("secure_url");
         Workout workout = Workout.builder()
                 .name(requestWorkout.getName())

@@ -1,9 +1,11 @@
 package com.ashish.planservice.service;
 
+import com.ashish.planservice.dto.RecipeVariantDTO;
 import com.ashish.planservice.dto.RequestRecipe;
 import com.ashish.planservice.dto.ResponseRecipe;
 import com.ashish.planservice.model.Recipe;
 import com.ashish.planservice.repository.RecipeRepository;
+import com.ashish.planservice.repository.RecipeVariantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,7 @@ public class RecipeServiceImp implements RecipeService{
     RecipeRepository repository;
     @Autowired
     CloudinaryService cloudinaryService;
+
     @Override
     public ResponseRecipe addRecipe(RequestRecipe recipeReq , MultipartFile img) {
         String name = recipeReq.getName();
@@ -34,12 +37,8 @@ public class RecipeServiceImp implements RecipeService{
         String imageUrl = (String) data.get("secure_url");
         Recipe recipe = Recipe.builder()
                 .name(recipeReq.getName())
+                .description(recipeReq.getDescription())
                 .category(recipeReq.getCategory())
-                .quantity(recipeReq.getQuantity())
-                .protein(recipeReq.getProtein())
-                .fat(recipeReq.getFat())
-                .carbs(recipeReq.getCarbs())
-                .fiber(recipeReq.getFiber())
                 .imageUrl(imageUrl)
                 .build();
         Recipe savedRecipe = repository.save(recipe);
@@ -54,4 +53,12 @@ public class RecipeServiceImp implements RecipeService{
     public List<Recipe> getAllRecipes() {
         return repository.findAll();
     }
+
+    @Override
+    public Recipe getRecipeById(Long foodId) {
+
+        Recipe recipe = repository.findById(foodId).get();
+        return recipe;
+    }
+
 }
