@@ -22,6 +22,7 @@ public class Recipe {
     private String description;
     private String category;
     private String imageUrl;
+    private String imagePublicId;
 
     @JsonManagedReference
     @OneToMany(mappedBy = "recipe")

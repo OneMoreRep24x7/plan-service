@@ -35,11 +35,13 @@ public class RecipeServiceImp implements RecipeService{
         String folder = "Recipes_images";
         Map data =  cloudinaryService.upload(img,folder);
         String imageUrl = (String) data.get("secure_url");
+        String publicId = (String) data.get("public_id");
         Recipe recipe = Recipe.builder()
                 .name(recipeReq.getName())
                 .description(recipeReq.getDescription())
                 .category(recipeReq.getCategory())
                 .imageUrl(imageUrl)
+                .imagePublicId(publicId)
                 .build();
         Recipe savedRecipe = repository.save(recipe);
         return ResponseRecipe.builder()

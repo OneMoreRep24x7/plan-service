@@ -9,10 +9,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 @Builder
-public class RequestWorkout {
-    private String name;
-    private String description;
-    private String videoUrl;
-    private Double durationMinutes;
-    private Double caloriesBurned;
+public class TransactionDetails {
+
+    private String orderId;
+    private String currency;
+    private Integer amount;
+    private String key;
 }

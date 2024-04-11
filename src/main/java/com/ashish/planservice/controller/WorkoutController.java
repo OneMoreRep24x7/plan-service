@@ -20,8 +20,7 @@ import java.util.List;
 public class WorkoutController {
     @Autowired
     WorkoutService workoutService;
-
-        @PostMapping("/addWorkout")
+    @PostMapping("/addWorkout")
     public ResponseEntity<ResponseWorkout> addWorkout(
             @RequestPart("file") MultipartFile file,
             @RequestParam("workoutRequest") String workoutRequest

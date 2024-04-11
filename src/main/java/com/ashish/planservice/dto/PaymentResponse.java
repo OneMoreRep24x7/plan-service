@@ -1,5 +1,6 @@
 package com.ashish.planservice.dto;
 
+import com.ashish.planservice.model.AppPayment;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -7,12 +8,10 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 @Builder
-public class RequestWorkout {
-    private String name;
-    private String description;
-    private String videoUrl;
-    private Double durationMinutes;
-    private Double caloriesBurned;
+@Data
+public class PaymentResponse {
+    private AppPayment payment;
+    private String message;
+    private int statusCode;
 }

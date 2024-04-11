@@ -32,12 +32,14 @@ public class WorkoutServiceImp implements WorkoutService{
         String folder = "Workout_Videos";
         Map data =  cloudinaryService.uploadVideo(video,folder);
         String videoUrl = (String) data.get("secure_url");
+        String publicUrl =(String) data.get("public_id");
         Workout workout = Workout.builder()
                 .name(requestWorkout.getName())
                 .description(requestWorkout.getDescription())
                 .durationMinutes(requestWorkout.getDurationMinutes())
                 .caloriesBurned(requestWorkout.getCaloriesBurned())
                 .videoUrl(videoUrl)
+                .videoPublicUrl(publicUrl)
                 .build();
         Workout savedWorkout = repository.save(workout);
         return ResponseWorkout.builder()

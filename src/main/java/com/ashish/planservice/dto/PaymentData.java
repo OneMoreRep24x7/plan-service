@@ -5,14 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 @Builder
-public class RequestWorkout {
-    private String name;
-    private String description;
-    private String videoUrl;
-    private Double durationMinutes;
-    private Double caloriesBurned;
+@Data
+public class PaymentData {
+    private String payment_id;
+    private UUID userId;
+    private int amount;
 }

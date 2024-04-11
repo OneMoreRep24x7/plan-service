@@ -21,6 +21,7 @@ public class Workout {
     private String name;
     private String description;
     private String videoUrl;
-    private Integer durationMinutes;
-    private Integer caloriesBurned;
+    private String videoPublicUrl;
+    private Double durationMinutes;
+    private Double caloriesBurned;
 }
