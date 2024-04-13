@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class RequestWorkout {
     private String name;
     private String description;
+    private String workoutCategory;
     private String videoUrl;
     private Double durationMinutes;
     private Double caloriesBurned;

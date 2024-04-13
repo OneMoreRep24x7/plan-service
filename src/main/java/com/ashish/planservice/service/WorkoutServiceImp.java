@@ -36,6 +36,7 @@ public class WorkoutServiceImp implements WorkoutService{
         Workout workout = Workout.builder()
                 .name(requestWorkout.getName())
                 .description(requestWorkout.getDescription())
+                .workoutCategory(requestWorkout.getWorkoutCategory())
                 .durationMinutes(requestWorkout.getDurationMinutes())
                 .caloriesBurned(requestWorkout.getCaloriesBurned())
                 .videoUrl(videoUrl)

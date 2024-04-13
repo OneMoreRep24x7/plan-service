@@ -1,27 +1,27 @@
 package com.ashish.planservice.service;
 
 import com.ashish.planservice.configuration.AuthorityProxy;
-import com.ashish.planservice.dto.PaymentData;
-import com.ashish.planservice.dto.PaymentResponse;
-import com.ashish.planservice.dto.TransactionDetails;
+import com.ashish.planservice.dto.*;
 import com.ashish.planservice.model.AppPayment;
+import com.ashish.planservice.model.TrainerPayment;
 import com.ashish.planservice.repository.AppPaymentRepository;
+import com.ashish.planservice.repository.TrainerPaymentRepository;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
-import org.apache.catalina.User;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class PaymentServiceImp implements PaymentService{
     @Autowired
     private AppPaymentRepository appPaymentRepository;
+    @Autowired
+    private TrainerPaymentRepository trainerPaymentRepository;
     @Autowired
     private AuthorityProxy authorityProxy;
     private static final String KEY_ID = "rzp_test_Wzz9O0iUUIq7aa";
@@ -45,22 +45,42 @@ public class PaymentServiceImp implements PaymentService{
     }
 
     @Override
-    public PaymentResponse SaveAppPayment(PaymentData paymentData) {
-        UUID userID = paymentData.getUserId();
+    public PaymentResponse saveAppPayment(PaymentData paymentData) {
+        UUID userId = paymentData.getUserId();
         AppPayment payment = AppPayment.builder()
                 .paymentId(paymentData.getPayment_id())
-                .userId(userID)
+                .userId(userId)
                 .amount(paymentData.getAmount())
                 .build();
         AppPayment savedPayment = appPaymentRepository.save(payment);
         authorityProxy.updatePayment(paymentData);
         return PaymentResponse.builder()
                 .payment(savedPayment)
-                .message("Payment saved successfully..")
+                .message("App Payment saved successfully..")
                 .statusCode(HttpStatus.OK.value())
                 .build();
 
     }
+
+    @Override
+    public TrainerPaymentResponse saveTrainerPayment(TrainerPaymentData paymentData) {
+        UUID userId = paymentData.getUserId();
+        UUID trainerId = paymentData.getTrainerId();
+        TrainerPayment payment = TrainerPayment.builder()
+                .paymentId(paymentData.getPayment_id())
+                .userId(userId)
+                .trainerId(trainerId)
+                .amount(paymentData.getAmount())
+                .build();
+        TrainerPayment savedPayment = trainerPaymentRepository.save(payment);
+        authorityProxy.updateTrainerPayment(paymentData);
+        return TrainerPaymentResponse.builder()
+                .payment(savedPayment)
+                .message("Trainer payment saved successfully")
+                .statusCode(HttpStatus.OK.value())
+                .build();
+    }
+
 
     private TransactionDetails prepareTransactionDetails(Order order){
         String orderId = order.get("id");

@@ -9,20 +9,21 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 @Builder
+@Data
 @Entity
-public class Workout {
+public class TrainerPayment {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
-    private String description;
-    private String workoutCategory;
-    private String videoUrl;
-    private String videoPublicUrl;
-    private Double durationMinutes;
-    private Double caloriesBurned;
+    private UUID userId;
+    private UUID trainerId;
+    private int amount;
+    private String paymentId;
+
 }
