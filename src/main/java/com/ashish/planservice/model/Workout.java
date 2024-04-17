@@ -1,9 +1,7 @@
 package com.ashish.planservice.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,4 +23,9 @@ public class Workout {
     private String videoPublicUrl;
     private Double durationMinutes;
     private Double caloriesBurned;
+
+    @JsonBackReference
+    @ManyToOne
+    @JoinColumn(name = "daily_workout_id") // Assuming this is the foreign key column
+    private DailyWorkout dailyWorkout;
 }
