@@ -1,9 +1,6 @@
 package com.ashish.planservice.service;
 
-import com.ashish.planservice.dto.CommonResponseDTO;
-import com.ashish.planservice.dto.DailyWorkoutParams;
-import com.ashish.planservice.dto.WorkoutPlanGetParams;
-import com.ashish.planservice.dto.WorkoutPlanParams;
+import com.ashish.planservice.dto.*;
 import com.ashish.planservice.model.DailyWorkout;
 import com.ashish.planservice.model.Workout;
 import com.ashish.planservice.model.WorkoutPlan;
@@ -17,6 +14,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class PlanServiceImp implements PlanService{
@@ -28,7 +26,7 @@ public class PlanServiceImp implements PlanService{
     @Override
     public CommonResponseDTO addDailyWorkout(DailyWorkoutParams dailyWorkoutParams) {
         System.out.println(dailyWorkoutParams+">>>>>>>>>");
-        List<Workout> workouts = dailyWorkoutParams.getWorkouts();
+        List<Workout> workouts = dailyWorkoutParams.getWorkouts().stream().collect(Collectors.toList());
 
         double totalDuration = 0.0;
         double totalCaloriesBurned = 0.0;
@@ -39,14 +37,6 @@ public class PlanServiceImp implements PlanService{
 
         }
 
-//        DailyWorkout dailyWorkout = DailyWorkout.builder()
-//                .day(dailyWorkoutParams.getDay())
-//                .workoutType(dailyWorkoutParams.getWorkoutType())
-//                .workouts(workouts)
-//                .ownerId(dailyWorkoutParams.getOwnerId())
-//                .duration(totalDuration)
-//                .caloriesBurned(totalCaloriesBurned)
-//                .build();
 
         DailyWorkout dailyWorkout = new DailyWorkout();
         dailyWorkout.setDay(dailyWorkoutParams.getDay());
@@ -55,6 +45,7 @@ public class PlanServiceImp implements PlanService{
         dailyWorkout.setOwnerId(dailyWorkoutParams.getOwnerId());
         dailyWorkout.setDuration(totalDuration);
         dailyWorkout.setCaloriesBurned(totalCaloriesBurned);
+        dailyWorkout.setWorkouts(workouts);
         DailyWorkout savedWorkout = dailyWorkoutRepository.save(dailyWorkout);
         System.out.println(savedWorkout);
         return CommonResponseDTO.builder()
@@ -77,15 +68,16 @@ public class PlanServiceImp implements PlanService{
     @Override
     public CommonResponseDTO addWorkoutPlan(WorkoutPlanParams workoutPlanParams) {
 
-        UUID userId = workoutPlanParams.getUserID();
-        LocalDate date = workoutPlanParams.getDate();
-        int week = workoutPlanParams.getWeek();
-        int month = date.getMonthValue();
+        UUID userId = workoutPlanParams.getUserId();
+        LocalDate startDate = workoutPlanParams.getStartDate();
+        int repeat = workoutPlanParams.getRepeat();
+        LocalDate planExpire = startDate.plusWeeks(repeat);
+        int month = startDate.getMonthValue();
         Optional<List<WorkoutPlan>> optionalWorkoutPlans = workoutPlanRepository.findByUserId(userId);
         if (optionalWorkoutPlans.isPresent()) {
             List<WorkoutPlan> workoutPlans = optionalWorkoutPlans.get();
             for (WorkoutPlan plan : workoutPlans) {
-                if (plan.getDate().getMonthValue() == month && plan.getWeek() == week) {
+                if (LocalDate.now().isBefore(plan.getPlanExpire())) {
                     return CommonResponseDTO.builder()
                             .message("Workout plan already exists for this week in the same month.")
                             .statusCode(HttpStatus.BAD_REQUEST.value())
@@ -96,11 +88,12 @@ public class PlanServiceImp implements PlanService{
 
         WorkoutPlan workoutPlan = WorkoutPlan.builder()
                 .planName(workoutPlanParams.getPlanName())
-                .date(workoutPlanParams.getDate())
-                .week(workoutPlanParams.getWeek())
+                .startDate(workoutPlanParams.getStartDate())
+                .repeat(workoutPlanParams.getRepeat())
                 .trainerId(workoutPlanParams.getTrainerId())
-                .userId(workoutPlanParams.getUserID())
                 .dailyWorkouts(workoutPlanParams.getDailyWorkouts())
+                .userId(workoutPlanParams.getUserId())
+                .planExpire(planExpire)
                 .build();
 
         workoutPlanRepository.save(workoutPlan);
@@ -112,19 +105,46 @@ public class PlanServiceImp implements PlanService{
 
 
     @Override
-    public WorkoutPlan getWorkoutPlan(WorkoutPlanGetParams planGetParams) {
+    public WorkoutPlanDTO getWorkoutPlan(WorkoutPlanGetParams planGetParams) {
         UUID userID = planGetParams.getUserId();
-        LocalDate date = planGetParams.getDate();
-        int week = planGetParams.getWeek();
-        int month = date.getMonthValue();
-        Optional<List<WorkoutPlan>> optionalWorkoutPlans = workoutPlanRepository.findByUserId(userID);
+        UUID trainerId = planGetParams.getTrainerId();
+
+        LocalDate currentDate = planGetParams.getDate();
+        DailyWorkout todayWorkout ;
+
+        Optional<List<WorkoutPlan>> optionalWorkoutPlans = workoutPlanRepository.findByUserIdAndTrainerId (userID,trainerId);
         if(optionalWorkoutPlans.isPresent()){
             List<WorkoutPlan> workoutPlans = optionalWorkoutPlans.get();
             for(WorkoutPlan workoutPlan : workoutPlans){
-                if( workoutPlan.getDate().getMonthValue() == month && workoutPlan.getWeek() == week){
-                    return  workoutPlan;
+                LocalDate startDate = workoutPlan.getStartDate();
+                LocalDate  endDate = workoutPlan.getPlanExpire();
+                if(!currentDate.isBefore(startDate) && !currentDate.isAfter(endDate)){
+                    List<DailyWorkout> plansDailyWorkout = workoutPlan.getDailyWorkouts();
+                    for(DailyWorkout dailyWorkout : plansDailyWorkout){
+                        if(dailyWorkout.getDay() == currentDate.getDayOfWeek().toString()){
+                            return WorkoutPlanDTO.builder()
+                                    .todayWorkout(dailyWorkout)
+                                    .message("Today's workout is fetched successfully")
+                                    .statusCode(HttpStatus.OK.value())
+                                    .build();
+                        }
+                    }
                 }
             }
+
+        }
+        return WorkoutPlanDTO.builder()
+                .message("Workout is not yet added by the trainer")
+                .statusCode(HttpStatus.NOT_FOUND.value()) //404
+                .build();
+    }
+
+    @Override
+    public List<WorkoutPlan> getTrainerWorkoutPlans(UUID trainerId) {
+        Optional<List<WorkoutPlan>> optionalWorkoutPlans = workoutPlanRepository.findByTrainerId(trainerId);
+        if(optionalWorkoutPlans.isPresent()){
+            List<WorkoutPlan> workoutPlan = optionalWorkoutPlans.get();
+            return workoutPlan;
 
         }
         return null;

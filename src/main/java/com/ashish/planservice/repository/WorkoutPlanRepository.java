@@ -10,5 +10,9 @@ import java.util.UUID;
 
 @Repository
 public interface WorkoutPlanRepository extends JpaRepository<WorkoutPlan,Long> {
-    Optional<List<WorkoutPlan>> findByUserId(UUID userID);
+    Optional<List<WorkoutPlan>> findByTrainerId(UUID trainerId);
+
+    Optional<List<WorkoutPlan>> findByUserIdAndTrainerId(UUID userID, UUID trainerId);
+
+    Optional<List<WorkoutPlan>> findByUserId(java.util.UUID userId);
 }

@@ -1,21 +1,19 @@
 package com.ashish.planservice.dto;
 
+import com.ashish.planservice.model.Workout;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @Data
-public class WorkoutPlanGetParams {
-
-    private LocalDate date;
+@Builder
+public class WorkoutTrackingParams {
     private UUID userId;
-    private UUID trainerId;
-
+    private Workout workout;
 }

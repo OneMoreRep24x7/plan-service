@@ -8,6 +8,7 @@ import com.ashish.planservice.service.PlanService;
 import com.ashish.planservice.service.WorkoutService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hibernate.jdbc.Work;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -59,8 +60,15 @@ public class WorkoutController {
         return ResponseEntity.ok(planService.addWorkoutPlan(workoutPlanParams));
     }
 
+    @GetMapping("/getTrainerWorkoutPlan")
+    public ResponseEntity<List<WorkoutPlan>> getTrainerWorkoutPlans(
+            @RequestParam("trainerId") UUID trainerId
+    ){
+        return  ResponseEntity.ok(planService.getTrainerWorkoutPlans(trainerId));
+    }
+
     @PostMapping("/getWorkoutPlan")
-    public ResponseEntity<WorkoutPlan> getWorkoutPlan(
+    public ResponseEntity<WorkoutPlanDTO> getWorkoutPlan(
             @RequestBody WorkoutPlanGetParams planGetParams
     ){
         return ResponseEntity.ok(planService.getWorkoutPlan(planGetParams));

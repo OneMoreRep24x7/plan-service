@@ -24,8 +24,4 @@ public class Workout {
     private Double durationMinutes;
     private Double caloriesBurned;
 
-    @JsonBackReference
-    @ManyToOne
-    @JoinColumn(name = "daily_workout_id") // Assuming this is the foreign key column
-    private DailyWorkout dailyWorkout;
 }

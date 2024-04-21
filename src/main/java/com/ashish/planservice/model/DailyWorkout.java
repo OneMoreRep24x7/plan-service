@@ -3,10 +3,7 @@ package com.ashish.planservice.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +11,8 @@ import java.util.UUID;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Getter
+@Setter
 @Builder
 @Entity
 public class DailyWorkout {
@@ -27,13 +25,14 @@ public class DailyWorkout {
     private Double caloriesBurned;
     private UUID ownerId;
 
-    @JsonManagedReference
-    @OneToMany(mappedBy = "dailyWorkout", fetch = FetchType.EAGER)
-    private List<Workout> workouts=new ArrayList<>();
-    @JsonBackReference
-    @ManyToOne
-    @JoinColumn(name = "workout_plan_id")
-    private WorkoutPlan workoutPlan;
+    @ManyToMany
+    @JoinTable(
+            name = "daily_workout_workouts",
+            joinColumns = @JoinColumn(name = "daily_workout_id"),
+            inverseJoinColumns = @JoinColumn(name = "workout_id")
+    )
+    private List<Workout> workouts;
+
     private boolean completed;
 
 }

@@ -5,17 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.util.UUID;
 
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 @Data
-public class WorkoutPlanGetParams {
-
-    private LocalDate date;
+public class FoodTrackingParams {
     private UUID userId;
-    private UUID trainerId;
-
+    private Long variantId;
 }

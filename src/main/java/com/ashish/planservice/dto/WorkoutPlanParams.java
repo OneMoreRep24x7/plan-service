@@ -16,10 +16,11 @@ import java.util.UUID;
 @Builder
 @Data
 public class WorkoutPlanParams {
-    private LocalDate date;
+    private LocalDate startDate;
     private String planName;
     private UUID trainerId;
-    private UUID userID;
-    private int week;
+    private UUID userId;
+    private int repeat;
+
     private List<DailyWorkout> dailyWorkouts;
 }

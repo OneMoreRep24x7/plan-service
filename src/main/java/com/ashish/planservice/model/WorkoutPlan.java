@@ -1,34 +1,32 @@
 package com.ashish.planservice.model;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Getter
+@Setter
 @Builder
 @Entity
 public class WorkoutPlan {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private LocalDate date;
+    private LocalDate startDate;
     private String planName;
-    private int week;
+    @Column(name = "`repeat`") // Escaping the column name using backticks
+    private int repeat;
     private UUID trainerId;
     private UUID userId;
-    @JsonManagedReference
-    @OneToMany(mappedBy = "workoutPlan")
-    private List<DailyWorkout> dailyWorkouts;
+    private LocalDate planExpire;
 
+    @OneToMany()
+    @JoinColumn(name = "workout_plan_id")
+    private List<DailyWorkout> dailyWorkouts = new ArrayList<>();
 }
