@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -48,6 +49,13 @@ public class TrackingController {
             @RequestBody FoodTrackingParams foodTrackingParams
     ){
         return ResponseEntity.ok(trackingService.removeFoodFromTracking(foodTrackingParams));
+    }
+
+    @GetMapping("/getLatestFoodTracking")
+    public  ResponseEntity<List<RecipeVariantDTO>> getLatestFoodTracking(
+            @RequestParam UUID userId
+    ){
+        return ResponseEntity.ok(trackingService.getLatestFoodTracking(userId));
     }
 
 

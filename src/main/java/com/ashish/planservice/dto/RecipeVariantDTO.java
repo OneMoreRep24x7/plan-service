@@ -21,7 +21,7 @@ public class RecipeVariantDTO {
     private Double fat;
     private Double carbs;
     private Double fiber;
-    private String recipeName; // Additional field for Recipe name
+    private String recipeName;
 
-    // Constructor, getters, and setters
+
 }

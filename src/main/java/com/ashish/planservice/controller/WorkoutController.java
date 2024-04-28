@@ -60,17 +60,18 @@ public class WorkoutController {
         return ResponseEntity.ok(planService.addWorkoutPlan(workoutPlanParams));
     }
 
-    @GetMapping("/getTrainerWorkoutPlan")
+    @PostMapping("/getTrainerWorkoutPlan")
     public ResponseEntity<List<WorkoutPlan>> getTrainerWorkoutPlans(
-            @RequestParam("trainerId") UUID trainerId
+            @RequestBody PlanReqParams planReqParams
     ){
-        return  ResponseEntity.ok(planService.getTrainerWorkoutPlans(trainerId));
+        return  ResponseEntity.ok(planService.getTrainerWorkoutPlans(planReqParams));
     }
 
     @PostMapping("/getWorkoutPlan")
     public ResponseEntity<WorkoutPlanDTO> getWorkoutPlan(
             @RequestBody WorkoutPlanGetParams planGetParams
     ){
+        System.out.println(planGetParams+">>>>getPlans");
         return ResponseEntity.ok(planService.getWorkoutPlan(planGetParams));
     }
 

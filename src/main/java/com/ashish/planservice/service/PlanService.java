@@ -16,5 +16,5 @@ public interface PlanService {
 
     WorkoutPlanDTO getWorkoutPlan(WorkoutPlanGetParams planGetParams);
 
-    List<WorkoutPlan> getTrainerWorkoutPlans(java.util.UUID trainerId);
+    List<WorkoutPlan> getTrainerWorkoutPlans(PlanReqParams planReqParams);
 }

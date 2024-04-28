@@ -1,5 +1,6 @@
 package com.ashish.planservice.service;
 
+import com.ashish.planservice.configuration.AuthorityProxy;
 import com.ashish.planservice.dto.*;
 import com.ashish.planservice.model.RecipeVariant;
 import com.ashish.planservice.model.Tracking;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class TrackingServiceImp implements TrackingService{
@@ -23,53 +25,53 @@ public class TrackingServiceImp implements TrackingService{
 
     @Autowired
     private RecipeVariantRepository recipeVariantRepository;
+    @Autowired
+    private AuthorityProxy authorityProxy;
 
     @Override
     public WorkoutTrackingDTO updateWorkoutTracking(WorkoutTrackingParams workoutTrackingParams) {
         UUID userId = workoutTrackingParams.getUserId();
         LocalDate currentDate = LocalDate.now();
+
+        // Find the most recent tracking record for the user
         Optional<Tracking> optionalTracking = trackingRepository.findFirstByUserIdOrderByTrackingDateDesc(userId);
-        if(optionalTracking.isPresent()){
-            Tracking tracking = optionalTracking.get();
-            if(currentDate.equals(tracking.getTrackingDate())){
-                tracking.getWorkouts().add(workoutTrackingParams.getWorkout());
-                tracking.setTrackingDate(currentDate);
-                Tracking savedTracking = trackingRepository.save(tracking);
-                return WorkoutTrackingDTO.builder()
-                        .details(savedTracking)
-                        .message("Workout added successfully!")
-                        .statusCode(HttpStatus.OK.value())
-                        .build();
-            }else {
 
-                Tracking newTracking = new Tracking();
-                newTracking.setUserId(userId);
-                newTracking.setWorkouts(List.of(workoutTrackingParams.getWorkout()));
-                newTracking.setTrackingDate(currentDate);
+        // If the most recent tracking is today, update it; otherwise, create a new tracking
+        Tracking tracking = optionalTracking
+                .filter(t -> currentDate.equals(t.getTrackingDate()))
+                .map(t -> {
+                    t.getWorkouts().add(workoutTrackingParams.getWorkout());
+                    return t;
+                })
+                .orElseGet(() -> {
+                    Tracking newTracking = new Tracking();
+                    newTracking.setUserId(userId);
+                    newTracking.setTrackingDate(currentDate);
+                    newTracking.setWorkouts(List.of(workoutTrackingParams.getWorkout()));
+                    return newTracking;
+                });
 
-                Tracking savedTracking = trackingRepository.save(newTracking);
-                return WorkoutTrackingDTO.builder()
-                        .details(savedTracking)
-                        .message("Workout added successfully!")
-                        .statusCode(HttpStatus.OK.value())
-                        .build();
-            }
-        }
+        // Update calories burned
+        updateCaloriesBurned(userId, workoutTrackingParams.getWorkout().getCaloriesBurned());
 
-        Tracking tracking = Tracking.builder()
-                .userId(userId)  // UUID for the user
-                .workouts(List.of(workoutTrackingParams.getWorkout()))  // List of Workout objects
-                .trackingDate(currentDate)  // Date for tracking
-                .build();
+        // Save the tracking record and return a response
         Tracking savedTracking = trackingRepository.save(tracking);
+
         return WorkoutTrackingDTO.builder()
                 .details(savedTracking)
                 .message("Workout added successfully!")
                 .statusCode(HttpStatus.OK.value())
                 .build();
-
-
     }
+
+    private void updateCaloriesBurned(UUID userId, Double caloriesBurned) {
+        CaloriesBurnReqDTO caloriesBurnReqDTO = CaloriesBurnReqDTO.builder()
+                .userId(userId)
+                .caloriesBurned(caloriesBurned)
+                .build();
+        authorityProxy.updateCaloriesBurned(caloriesBurnReqDTO);
+    }
+
 
     @Override
     public WorkoutTrackingDTO getLatestWorkoutTracking(UUID userId) {
@@ -98,6 +100,7 @@ public class TrackingServiceImp implements TrackingService{
             List<Workout> workouts = tracking.getWorkouts();
             workouts.removeIf(workout -> workout.getId().equals(workoutToRemove.getId()));
             tracking.setWorkouts(workouts);
+            updateCaloriesBurned(userId,0-workoutToRemove.getCaloriesBurned());
             trackingRepository.save(tracking);
             return CommonResponseDTO.builder()
                     .message("Workout removed from tracking")
@@ -118,37 +121,46 @@ public class TrackingServiceImp implements TrackingService{
         Long variantId = foodTrackingParams.getVariantId();
         LocalDate today = LocalDate.now();
         Optional<Tracking> optionalTracking = trackingRepository.findFirstByUserIdOrderByTrackingDateDesc(userId);
+        Optional<RecipeVariant> optionalVariant = recipeVariantRepository.findById(variantId);
         Tracking tracking;
         if (optionalTracking.isPresent()) {
             tracking = optionalTracking.get();
+            if(today.equals(tracking.getTrackingDate())){
+                RecipeVariant variant = optionalVariant.get();
+                tracking.getRecipeVariants().add(variant);
+                CaloriesEatenReqDTO caloriesEaten =CaloriesEatenReqDTO.builder()
+                        .userId(userId)
+                        .caloriesEaten(variant.getCalories())
+                        .build();
+                authorityProxy.updateCaloriesEaten(caloriesEaten);
+                trackingRepository.save(tracking);
+                return FoodTrackingDTO.builder()
+                        .foodName(variant.getRecipe().getName())
+                        .details(tracking)
+                        .message("Food variant tracked successfully")
+                        .statusCode(HttpStatus.OK.value())
+                        .build();
+            }else {
+                tracking = Tracking.builder()
+                        .userId(userId)
+                        .trackingDate(today)
+                        .recipeVariants(new ArrayList<>())
+                        .build();
+            }
         } else {
             tracking = Tracking.builder()
                     .userId(userId)
                     .trackingDate(today)
                     .recipeVariants(new ArrayList<>())
                     .build();
-        }
-        Optional<RecipeVariant> optionalVariant = recipeVariantRepository.findById(variantId);
-
-        if (optionalVariant.isEmpty()) {
-            return FoodTrackingDTO.builder()
-                    .foodName(null)
-                    .details(tracking)
-                    .message("Invalid food variant specified")
-                    .statusCode(HttpStatus.BAD_REQUEST.value())
+            CaloriesEatenReqDTO caloriesEaten =CaloriesEatenReqDTO.builder()
+                    .userId(userId)
+                    .caloriesEaten(0)
                     .build();
+            authorityProxy.updateCaloriesEaten(caloriesEaten);
+            trackingRepository.save(tracking);
         }
-
-        RecipeVariant variant = optionalVariant.get();
-        tracking.getRecipeVariants().add(variant);
-        trackingRepository.save(tracking);
-
-        return FoodTrackingDTO.builder()
-                .foodName(variant.getRecipe().getName())
-                .details(tracking)
-                .message("Food variant tracked successfully")
-                .statusCode(HttpStatus.OK.value())
-                .build();
+        return null;
     }
 
     @Override
@@ -169,6 +181,7 @@ public class TrackingServiceImp implements TrackingService{
 
         // Retrieve the list of recipe variants in the tracking record
         List<RecipeVariant> recipeVariants = tracking.getRecipeVariants();
+        RecipeVariant recipeVariant = recipeVariantRepository.findById(variantId).get();
 
         // Find the first occurrence of the specified variant
         Optional<RecipeVariant> variantToRemove = recipeVariants.stream()
@@ -184,11 +197,14 @@ public class TrackingServiceImp implements TrackingService{
 
         // Remove the variant from the list
         recipeVariants.remove(variantToRemove.get());
-        if (recipeVariants.isEmpty()) {
-            trackingRepository.delete(tracking); // Optionally delete if list is empty
-        } else {
-            trackingRepository.save(tracking);
-        }
+        CaloriesEatenReqDTO caloriesEaten =CaloriesEatenReqDTO.builder()
+                .userId(userId)
+                .caloriesEaten(0-recipeVariant.getCalories())
+                .build();
+        authorityProxy.updateCaloriesEaten(caloriesEaten);
+
+        trackingRepository.save(tracking);
+
 
         return CommonResponseDTO.builder()
                 .message("Food variant removed from today's tracking")
@@ -198,5 +214,35 @@ public class TrackingServiceImp implements TrackingService{
 
 
 
+    @Override
+    public List<RecipeVariantDTO> getLatestFoodTracking(UUID userId) {
+
+        Optional<Tracking> optionalTracking = trackingRepository.findFirstByUserIdOrderByTrackingDateDesc(userId);
+
+        if (optionalTracking.isPresent()) {
+            Tracking tracking = optionalTracking.get();
+            List<RecipeVariantDTO> recipeVariantDTOs = tracking.getRecipeVariants().stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+
+            return recipeVariantDTOs;
+        }
+
+        return List.of();
+    }
+
+    private RecipeVariantDTO convertToDTO(RecipeVariant recipeVariant) {
+        return RecipeVariantDTO.builder()
+                .id(recipeVariant.getId())
+                .unit(recipeVariant.getUnit())
+                .quantity(recipeVariant.getQuantity())
+                .calories(recipeVariant.getCalories())
+                .protein(recipeVariant.getProtein())
+                .fat(recipeVariant.getFat())
+                .carbs(recipeVariant.getCarbs())
+                .fiber(recipeVariant.getFiber())
+                .recipeName(recipeVariant.getRecipe().getName())
+                .build();
+    }
 
 }

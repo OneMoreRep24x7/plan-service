@@ -3,6 +3,7 @@ package com.ashish.planservice.service;
 import com.ashish.planservice.dto.*;
 import com.ashish.planservice.model.Tracking;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface TrackingService {
@@ -17,4 +18,5 @@ public interface TrackingService {
     CommonResponseDTO removeFoodFromTracking(FoodTrackingParams foodTrackingParams);
 
 
+   List<RecipeVariantDTO> getLatestFoodTracking(UUID userId);
 }

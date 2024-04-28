@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -110,38 +111,56 @@ public class PlanServiceImp implements PlanService{
         UUID trainerId = planGetParams.getTrainerId();
 
         LocalDate currentDate = planGetParams.getDate();
-        DailyWorkout todayWorkout ;
 
-        Optional<List<WorkoutPlan>> optionalWorkoutPlans = workoutPlanRepository.findByUserIdAndTrainerId (userID,trainerId);
-        if(optionalWorkoutPlans.isPresent()){
+        // Verify if the day is correct
+        DayOfWeek dayOfWeek = currentDate.getDayOfWeek();
+        System.out.println("Selected date: " + currentDate + " Day of the week: " + dayOfWeek);
+
+        if (dayOfWeek == DayOfWeek.SUNDAY) {
+            return WorkoutPlanDTO.builder()
+                    .message("Today is a rest day. No workouts are scheduled.")
+                    .statusCode(HttpStatus.OK.value())
+                    .build();
+        }
+
+        Optional<List<WorkoutPlan>> optionalWorkoutPlans = workoutPlanRepository.findByUserIdAndTrainerId(userID, trainerId);
+        if (optionalWorkoutPlans.isPresent()) {
             List<WorkoutPlan> workoutPlans = optionalWorkoutPlans.get();
-            for(WorkoutPlan workoutPlan : workoutPlans){
+            for (WorkoutPlan workoutPlan : workoutPlans) {
                 LocalDate startDate = workoutPlan.getStartDate();
-                LocalDate  endDate = workoutPlan.getPlanExpire();
-                if(!currentDate.isBefore(startDate) && !currentDate.isAfter(endDate)){
+                LocalDate endDate = workoutPlan.getPlanExpire();
+
+                // Validate start and end dates for correctness
+                System.out.println("Workout start date: " + startDate + " end date: " + endDate);
+
+                if (!currentDate.isBefore(startDate) && !currentDate.isAfter(endDate)) {
                     List<DailyWorkout> plansDailyWorkout = workoutPlan.getDailyWorkouts();
-                    for(DailyWorkout dailyWorkout : plansDailyWorkout){
-                        if(dailyWorkout.getDay() == currentDate.getDayOfWeek().toString()){
+
+                    for (DailyWorkout dailyWorkout : plansDailyWorkout) {
+                        if (dailyWorkout.getDay().equals(dayOfWeek.toString())) {
                             return WorkoutPlanDTO.builder()
                                     .todayWorkout(dailyWorkout)
-                                    .message("Today's workout is fetched successfully")
+                                    .workoutPlan(workoutPlan)
+                                    .message("Today's workout is fetched successfully.")
                                     .statusCode(HttpStatus.OK.value())
                                     .build();
                         }
                     }
                 }
             }
-
         }
+
         return WorkoutPlanDTO.builder()
-                .message("Workout is not yet added by the trainer")
-                .statusCode(HttpStatus.NOT_FOUND.value()) //404
+                .message("Workout is not yet added by the trainer.")
+                .statusCode(HttpStatus.NOT_FOUND.value())
                 .build();
     }
 
     @Override
-    public List<WorkoutPlan> getTrainerWorkoutPlans(UUID trainerId) {
-        Optional<List<WorkoutPlan>> optionalWorkoutPlans = workoutPlanRepository.findByTrainerId(trainerId);
+    public List<WorkoutPlan> getTrainerWorkoutPlans(PlanReqParams planReqParams) {
+        UUID userId = planReqParams.getUserId();
+        UUID trainerId = planReqParams.getTrainerId();
+        Optional<List<WorkoutPlan>> optionalWorkoutPlans = workoutPlanRepository.findByUserIdAndTrainerId(userId,trainerId);
         if(optionalWorkoutPlans.isPresent()){
             List<WorkoutPlan> workoutPlan = optionalWorkoutPlans.get();
             return workoutPlan;
