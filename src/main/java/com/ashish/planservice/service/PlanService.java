@@ -17,4 +17,12 @@ public interface PlanService {
     WorkoutPlanDTO getWorkoutPlan(WorkoutPlanGetParams planGetParams);
 
     List<WorkoutPlan> getTrainerWorkoutPlans(PlanReqParams planReqParams);
+
+    CommonResponseDTO deleteWorkoutPlan(Long planId);
+
+    CommonResponseDTO deleteDailyWorkout(Long planId);
+
+    CommonResponseDTO updateWorkoutPlan(UpdateWorkoutPlanReq updateWorkoutPlanReq);
+
+    CommonResponseDTO updateDailyWorkout(UpdateDailyWorkout updateDailyWorkout);
 }

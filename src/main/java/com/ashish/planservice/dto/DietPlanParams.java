@@ -17,6 +17,10 @@ import java.util.UUID;
 @Builder
 public class DietPlanParams {
     private LocalDate startDate;
+    private String userFullName;
+    private String trainerFullName;
+    private String userEmail;
+    private String userPhoneNumber;
     private String planName;
     private UUID trainerId;
     private UUID userId;

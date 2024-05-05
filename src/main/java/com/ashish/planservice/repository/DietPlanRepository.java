@@ -12,4 +12,6 @@ import java.util.UUID;
 public interface DietPlanRepository extends JpaRepository<DietPlan,Long> {
     Optional<List<DietPlan>> findByUserId(UUID userId);
     Optional<List<DietPlan>> findByUserIdAndTrainerId(UUID userId, UUID trainerId);
+
+    void deleteByUserIdAndTrainerId(UUID userId, UUID trainerId);
 }

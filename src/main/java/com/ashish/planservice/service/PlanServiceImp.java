@@ -168,4 +168,91 @@ public class PlanServiceImp implements PlanService{
         }
         return null;
     }
+
+    @Override
+    public CommonResponseDTO deleteWorkoutPlan(Long planId) {
+        workoutPlanRepository.deleteById(planId);
+        return CommonResponseDTO.builder()
+                .message("Workout plan deleted successfully..")
+                .statusCode(HttpStatus.OK.value())
+                .build();
+    }
+
+    @Override
+    public CommonResponseDTO deleteDailyWorkout(Long planId) {
+        dailyWorkoutRepository.deleteById(planId);
+        return CommonResponseDTO.builder()
+                .message("DailyWorkout  deleted successfully..")
+                .statusCode(HttpStatus.OK.value())
+                .build();
+    }
+
+    @Override
+    public CommonResponseDTO updateWorkoutPlan(UpdateWorkoutPlanReq updateWorkoutPlanReq) {
+        long workoutPlanId = updateWorkoutPlanReq.getWorkoutPlanId();
+        Optional<WorkoutPlan> optionalPlan = workoutPlanRepository.findById(workoutPlanId);
+
+        if (!optionalPlan.isPresent()) {
+            return CommonResponseDTO.builder()
+                    .message("Workout plan not found.")
+                    .statusCode(HttpStatus.NOT_FOUND.value())
+                    .build();
+        }
+
+        WorkoutPlan existingPlan = optionalPlan.get();
+
+        existingPlan.setPlanName(updateWorkoutPlanReq.getPlanName());
+        existingPlan.setStartDate(updateWorkoutPlanReq.getStartDate());
+        existingPlan.setRepeat(updateWorkoutPlanReq.getRepeat());
+        existingPlan.setTrainerId(updateWorkoutPlanReq.getTrainerId());
+        existingPlan.setDailyWorkouts(updateWorkoutPlanReq.getDailyWorkouts());
+        existingPlan.setPlanExpire(updateWorkoutPlanReq.getStartDate().plusWeeks(updateWorkoutPlanReq.getRepeat()));
+
+        workoutPlanRepository.save(existingPlan);
+
+        return CommonResponseDTO.builder()
+                .message("Workout plan updated successfully.")
+                .statusCode(HttpStatus.OK.value())
+                .build();
+
+
+    }
+
+    @Override
+    public CommonResponseDTO updateDailyWorkout(UpdateDailyWorkout updateDailyWorkout) {
+        long dailyWorkoutId = updateDailyWorkout.getDailyWorkoutId();
+        Optional<DailyWorkout> optionalWorkout = dailyWorkoutRepository.findById(dailyWorkoutId);
+
+        if (!optionalWorkout.isPresent()) {
+            return CommonResponseDTO.builder()
+                    .message("Daily workout not found.")
+                    .statusCode(HttpStatus.NOT_FOUND.value())
+                    .build();
+        }
+
+        DailyWorkout existingWorkout = optionalWorkout.get();
+
+        existingWorkout.setDay(updateDailyWorkout.getDay());
+        existingWorkout.setWorkoutType(updateDailyWorkout.getWorkoutType());
+
+        List<Workout> updatedWorkouts = updateDailyWorkout.getWorkouts().stream().collect(Collectors.toList());
+        double updatedTotalDuration = 0.0;
+        double updatedTotalCaloriesBurned = 0.0;
+        for (Workout workout : updatedWorkouts) {
+            updatedTotalDuration += workout.getDurationMinutes();
+            updatedTotalCaloriesBurned += workout.getCaloriesBurned();
+        }
+
+        existingWorkout.setWorkouts(updatedWorkouts);
+        existingWorkout.setDuration(updatedTotalDuration);
+        existingWorkout.setCaloriesBurned(updatedTotalCaloriesBurned);
+
+        dailyWorkoutRepository.save(existingWorkout);
+
+        return CommonResponseDTO.builder()
+                .message("Daily workout updated successfully.")
+                .statusCode(HttpStatus.OK.value())
+                .build();
+
+    }
 }

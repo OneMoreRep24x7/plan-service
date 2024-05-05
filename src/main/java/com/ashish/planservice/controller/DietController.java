@@ -41,6 +41,7 @@ public class DietController {
     public ResponseEntity<CommonResponseDTO> addDietPlan(
             @RequestBody DietPlanParams dietPlanParams
             ){
+        System.out.println(dietPlanParams+"DietPlanReq");
         return ResponseEntity.ok(dietService.addDietPlan(dietPlanParams));
     }
 
@@ -56,6 +57,32 @@ public class DietController {
     ){
         System.out.println(planGetParams+">>>>getPlans");
         return ResponseEntity.ok(dietService.getDietPlan(planGetParams));
+    }
+
+    @PostMapping("/deleteDietPlan")
+    public ResponseEntity<CommonResponseDTO> deleteDietPlan(
+            @RequestBody DeleteReqDTO deleteReqDTO
+    ){
+        return ResponseEntity.ok(dietService.deleteDietPlan(deleteReqDTO));
+    }
+    @GetMapping("/deleteDailyDiet")
+    public ResponseEntity<CommonResponseDTO> deleteDailyDiet(
+            @RequestParam("planId") Long planId
+    ){
+        return ResponseEntity.ok(dietService.deleteDailyDiet(planId));
+    }
+    @PostMapping("/updateDietPlan")
+    public ResponseEntity<CommonResponseDTO> updateDietPlan(
+            @RequestBody UpdateDietPlanReq updateDietPlanReq
+    ){
+        return  ResponseEntity.ok(dietService.updateDietPlan(updateDietPlanReq));
+    }
+
+    @PostMapping("/updateDailyDiet")
+    public ResponseEntity<CommonResponseDTO> updateDailyDiet(
+            @RequestBody UpdateDailyDietReq updateDailyDietReq
+    ){
+        return ResponseEntity.ok(dietService.updateDailyDiet(updateDailyDietReq));
     }
 
 

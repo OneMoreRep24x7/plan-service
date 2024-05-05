@@ -1,6 +1,7 @@
 package com.ashish.planservice.service;
 
 import com.ashish.planservice.dto.*;
+import com.ashish.planservice.kafka.KafkaMessagePublisher;
 import com.ashish.planservice.model.*;
 import com.ashish.planservice.repository.DailyDietRepository;
 import com.ashish.planservice.repository.DietPlanRepository;
@@ -22,6 +23,8 @@ public class DietServiceImp implements DietService{
     private DailyDietRepository dailyDietRepository;
     @Autowired
     private DietPlanRepository dietPlanRepository;
+    @Autowired
+    private KafkaMessagePublisher kafkaMessagePublisher;
 
     @Override
     public CommonResponseDTO addDailyDiet(DailyDietReqParams dailyDietReqParams) {
@@ -32,7 +35,7 @@ public class DietServiceImp implements DietService{
                 .lunch(dailyDietReqParams.getLunch())
                 .dinner(dailyDietReqParams.getDinner())
                 .build();
-        dailyDietRepository.save(dailyDiet);
+          dailyDietRepository.save(dailyDiet);
         return CommonResponseDTO.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("Daily diet added successfully...")
@@ -99,7 +102,17 @@ public class DietServiceImp implements DietService{
                 .planExpire(planExpire)
                 .build();
 
-        dietPlanRepository.save(dietPlan);
+        DietPlan savedDietPlan = dietPlanRepository.save(dietPlan);
+        MsgDTO message = MsgDTO.builder()
+                .userFullName(dietPlanParams.getUserFullName())
+                .trainerFullName(dietPlanParams.getTrainerFullName())
+                .planName(dietPlanParams.getPlanName())
+                .planStart(savedDietPlan.getStartDate())
+                .planExpire(savedDietPlan.getPlanExpire())
+                .userEmail(dietPlanParams.getUserEmail())
+                .phoneNumber(dietPlanParams.getUserPhoneNumber())
+                .build();
+        kafkaMessagePublisher.sendEventsToTopic(message);
         return CommonResponseDTO.builder()
                 .message("Workout plan added successfully")
                 .statusCode(HttpStatus.OK.value())
@@ -164,6 +177,87 @@ public class DietServiceImp implements DietService{
                 .message("Diet is not yet added by the trainer.")
                 .statusCode(HttpStatus.NOT_FOUND.value())
                 .build();
+    }
+
+    @Override
+    public CommonResponseDTO deleteDietPlan(DeleteReqDTO deleteReqDTO) {
+        UUID userId = deleteReqDTO.getUserId();
+        UUID trainerId = deleteReqDTO.getTrainerId();
+        dietPlanRepository.deleteByUserIdAndTrainerId(userId,trainerId);
+        return CommonResponseDTO.builder()
+                .message("Plan Deleted successfully")
+                .statusCode(HttpStatus.OK.value())
+                .build();
+    }
+
+    @Override
+    public CommonResponseDTO deleteDailyDiet(Long planId) {
+        dailyDietRepository.deleteById(planId);
+        return CommonResponseDTO.builder()
+                .message("Daily Diet Plan Deleted successfully")
+                .statusCode(HttpStatus.OK.value())
+                .build();
+    }
+
+    @Override
+    public CommonResponseDTO updateDietPlan(UpdateDietPlanReq updateDietPlanReq) {
+        Long dietPlanId = updateDietPlanReq.getDietPlanId();
+        Optional<DietPlan> optionalPlan = dietPlanRepository.findById(dietPlanId);
+
+        if (!optionalPlan.isPresent()) {
+            return CommonResponseDTO.builder()
+                    .message("Diet plan not found.")
+                    .statusCode(HttpStatus.NOT_FOUND.value())
+                    .build();
+        }
+
+        DietPlan existingPlan = optionalPlan.get();
+
+        existingPlan.setPlanName(updateDietPlanReq.getPlanName());
+        existingPlan.setStartDate(updateDietPlanReq.getStartDate());
+        existingPlan.setRepeat(updateDietPlanReq.getRepeat());
+        existingPlan.setTrainerId(updateDietPlanReq.getTrainerId());
+        existingPlan.setDailyDiets(updateDietPlanReq.getDailyDiets());
+
+        LocalDate planExpire = updateDietPlanReq.getStartDate().plusWeeks(updateDietPlanReq.getRepeat());
+        existingPlan.setPlanExpire(planExpire);
+
+        dietPlanRepository.save(existingPlan);
+
+        return CommonResponseDTO.builder()
+                .message("Diet plan updated successfully.")
+                .statusCode(HttpStatus.OK.value())
+                .build();
+
+    }
+
+    @Override
+    public CommonResponseDTO updateDailyDiet(UpdateDailyDietReq updateDailyDietReq) {
+        Long dailyDietId = updateDailyDietReq.getDailyDietId();
+        Optional<DailyDiet> optionalDiet = dailyDietRepository.findById(dailyDietId);
+
+        if (!optionalDiet.isPresent()) {
+            return CommonResponseDTO.builder()
+                    .statusCode(HttpStatus.NOT_FOUND.value())
+                    .message("Daily diet not found.")
+                    .build();
+        }
+
+        DailyDiet existingDiet = optionalDiet.get();
+
+        existingDiet.setDay(updateDailyDietReq.getDay());
+        existingDiet.setOwnerId(updateDailyDietReq.getOwnerId());
+        existingDiet.setBreakfast(updateDailyDietReq.getBreakfast());
+        existingDiet.setLunch(updateDailyDietReq.getLunch());
+        existingDiet.setDinner(updateDailyDietReq.getDinner());
+
+        dailyDietRepository.save(existingDiet);
+
+        return CommonResponseDTO.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Daily diet updated successfully.")
+                .build();
+
     }
 
 

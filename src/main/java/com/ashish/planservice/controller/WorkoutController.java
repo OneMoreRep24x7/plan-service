@@ -75,5 +75,33 @@ public class WorkoutController {
         return ResponseEntity.ok(planService.getWorkoutPlan(planGetParams));
     }
 
+    @GetMapping("/deleteWorkoutPlan")
+    public ResponseEntity<CommonResponseDTO> deleteWorkoutPlan(
+            @RequestParam("planId") Long planId
+    ){
+        return ResponseEntity.ok(planService.deleteWorkoutPlan(planId));
+    }
+
+    @GetMapping("/deleteDailyWorkout")
+    public ResponseEntity<CommonResponseDTO> deleteDailyWorkout(
+            @RequestParam("planId") Long planId
+    ){
+        return ResponseEntity.ok(planService.deleteDailyWorkout(planId));
+    }
+
+    @PostMapping("/updateWorkoutPlan")
+    public ResponseEntity<CommonResponseDTO> updateWorkoutPlan(
+            @RequestBody UpdateWorkoutPlanReq updateWorkoutPlanReq
+    ){
+        return ResponseEntity.ok(planService.updateWorkoutPlan(updateWorkoutPlanReq));
+    }
+
+    @PostMapping("/updateDailyWorkout")
+    public ResponseEntity<CommonResponseDTO> updateDailyWorkout(
+            @RequestBody UpdateDailyWorkout updateDailyWorkout
+    ){
+        return ResponseEntity.ok(planService.updateDailyWorkout(updateDailyWorkout));
+    }
+
 
 }

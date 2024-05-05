@@ -20,4 +20,12 @@ public interface DietService {
     List<DietPlan> getTrainerDietPlans(PlanReqParams planReqParams);
 
     DietPlanDTO getDietPlan(WorkoutPlanGetParams planGetParams);
+
+    CommonResponseDTO deleteDietPlan(DeleteReqDTO deleteReqDTO);
+
+    CommonResponseDTO deleteDailyDiet(Long planId);
+
+    CommonResponseDTO updateDietPlan(UpdateDietPlanReq updateDietPlanReq);
+
+    CommonResponseDTO updateDailyDiet(UpdateDailyDietReq updateDailyDietReq);
 }
