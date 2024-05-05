@@ -106,6 +106,7 @@
 	</dependencyManagement>
 
 	<build>
+		<finalName>planservice-onemorerep</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
