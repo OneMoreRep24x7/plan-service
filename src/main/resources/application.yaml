@@ -3,6 +3,11 @@ spring:
     name: plan-service
   config:
     import: "optional:configserver:http://3.109.184.195:8888"
+  kafka:
+    producer:
+      bootstrap-servers: 15.206.80.123:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
   servlet:
     multipart:
       max-file-size: 10MB
