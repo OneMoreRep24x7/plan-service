@@ -2,10 +2,10 @@ spring:
   application:
     name: plan-service
   config:
-    import: "optional:configserver:http://3.109.184.195:8888"
+    import: "optional:configserver:http://3.111.235.72:8888"
   kafka:
     producer:
-      bootstrap-servers: 15.206.80.123:9092
+      bootstrap-servers: 65.1.243.55:9092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
   servlet:
