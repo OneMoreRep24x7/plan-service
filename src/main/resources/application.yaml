@@ -5,7 +5,7 @@ spring:
     import: "optional:configserver:http://3.111.235.72:8888"
   kafka:
     producer:
-      bootstrap-servers: 65.1.243.55:9092
+      bootstrap-servers: 65.1.243.55:9093
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
   servlet:
