@@ -12,38 +12,38 @@ import java.util.concurrent.CompletableFuture;
 @Service
 public class KafkaMessagePublisher {
 
-    @Autowired
-    private KafkaTemplate<String,Object> template;
-
-    public void sendMessageToTopic(String message){
-        CompletableFuture<SendResult<String, Object>> future = template.send("OneMoreRep", message);
-        future.whenComplete((result,ex)->{
-            if (ex == null) {
-                System.out.println("Sent message=[" + message +
-                        "] with offset=[" + result.getRecordMetadata().offset() + "]");
-            } else {
-                System.out.println("Unable to send message=[" +
-                        message + "] due to : " + ex.getMessage());
-            }
-        });
-
-    }
-
-    public void sendEventsToTopic(MsgDTO customer) {
-        try {
-            CompletableFuture<SendResult<String, Object>> future = template.send("OneMoreRep", customer);
-            future.whenComplete((result, ex) -> {
-                if (ex == null) {
-                    System.out.println("Sent message=[" + customer.toString() +
-                            "] with offset=[" + result.getRecordMetadata().offset() + "]");
-                } else {
-                    System.out.println("Unable to send message=[" +
-                            customer.toString() + "] due to : " + ex.getMessage());
-                }
-            });
-
-        } catch (Exception ex) {
-            System.out.println("ERROR : "+ ex.getMessage());
-        }
-    }
+//    @Autowired
+//    private KafkaTemplate<String,Object> template;
+//
+//    public void sendMessageToTopic(String message){
+//        CompletableFuture<SendResult<String, Object>> future = template.send("OneMoreRep", message);
+//        future.whenComplete((result,ex)->{
+//            if (ex == null) {
+//                System.out.println("Sent message=[" + message +
+//                        "] with offset=[" + result.getRecordMetadata().offset() + "]");
+//            } else {
+//                System.out.println("Unable to send message=[" +
+//                        message + "] due to : " + ex.getMessage());
+//            }
+//        });
+//
+//    }
+//
+//    public void sendEventsToTopic(MsgDTO customer) {
+//        try {
+//            CompletableFuture<SendResult<String, Object>> future = template.send("OneMoreRep", customer);
+//            future.whenComplete((result, ex) -> {
+//                if (ex == null) {
+//                    System.out.println("Sent message=[" + customer.toString() +
+//                            "] with offset=[" + result.getRecordMetadata().offset() + "]");
+//                } else {
+//                    System.out.println("Unable to send message=[" +
+//                            customer.toString() + "] due to : " + ex.getMessage());
+//                }
+//            });
+//
+//        } catch (Exception ex) {
+//            System.out.println("ERROR : "+ ex.getMessage());
+//        }
+//    }
 }

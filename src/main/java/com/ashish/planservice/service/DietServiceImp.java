@@ -1,5 +1,6 @@
 package com.ashish.planservice.service;
 
+import com.ashish.planservice.configuration.NotificationProxy;
 import com.ashish.planservice.dto.*;
 import com.ashish.planservice.kafka.KafkaMessagePublisher;
 import com.ashish.planservice.model.*;
@@ -25,6 +26,8 @@ public class DietServiceImp implements DietService{
     private DietPlanRepository dietPlanRepository;
     @Autowired
     private KafkaMessagePublisher kafkaMessagePublisher;
+    @Autowired
+    private NotificationProxy notificationProxy;
 
     @Override
     public CommonResponseDTO addDailyDiet(DailyDietReqParams dailyDietReqParams) {
@@ -35,7 +38,7 @@ public class DietServiceImp implements DietService{
                 .lunch(dailyDietReqParams.getLunch())
                 .dinner(dailyDietReqParams.getDinner())
                 .build();
-          dailyDietRepository.save(dailyDiet);
+            dailyDietRepository.save(dailyDiet);
         return CommonResponseDTO.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("Daily diet added successfully...")
@@ -112,7 +115,8 @@ public class DietServiceImp implements DietService{
                 .userEmail(dietPlanParams.getUserEmail())
                 .phoneNumber(dietPlanParams.getUserPhoneNumber())
                 .build();
-        kafkaMessagePublisher.sendEventsToTopic(message);
+//        kafkaMessagePublisher.sendEventsToTopic(message);
+        notificationProxy.sendNotification(message);
         return CommonResponseDTO.builder()
                 .message("Workout plan added successfully")
                 .statusCode(HttpStatus.OK.value())

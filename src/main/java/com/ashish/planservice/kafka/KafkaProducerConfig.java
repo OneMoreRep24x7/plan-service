@@ -10,10 +10,10 @@ import org.springframework.context.annotation.Configuration;
 public class KafkaProducerConfig {
 
 
-    @Bean
-    public NewTopic createTopic(){
-        return new NewTopic("OneMoreRep", 3, (short) 1);
-    }
+//    @Bean
+//    public NewTopic createTopic(){
+//        return new NewTopic("OneMoreRep", 3, (short) 1);
+//    }
 
 
 
